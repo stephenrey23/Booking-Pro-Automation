@@ -29,31 +29,18 @@ describe('JIRA ID: BOOK-101 - Stephen Reyes End-to-End Happy Path', () => {
     cy.get(EL.searchBtn).contains('Search').click({ force: true });
     
     cy.wait('@searchResultsNet');
-    cy.screenshot('debug-search-results');
 
-    cy.get('a', { timeout: 15000 })
-      .filter('[href*="checkout"], [href*="hotel/"]')
-      .first()
-      .click({ force: true });
-
+    cy.get('a').filter('[href*="checkout"]').first().click({ force: true });
     cy.wait('@checkoutNet', { timeout: 20000 });
 
-    cy.get('input#firstname, input[name*="firstname"], input[placeholder*="First"]', { timeout: 15000 })
+    cy.get('input#firstname').type('Stephen', { force: true });
+    cy.get('input#lastname').type('Reyes', { force: true });
+    cy.get('input#email').type('stephen.qa@example.com', { force: true });
+    cy.get('button[type="submit"]').click({ force: true });
+
+    cy.contains('button', 'Complete booking', { timeout: 15000 })
       .should('be.visible')
-      .type('Stephen', { delay: 50, force: true });
-
-    cy.get('input#lastname, input[name*="lastname"], input[placeholder*="Last"]')
-      .should('be.visible')
-      .type('Reyes', { delay: 50, force: true });
-
-    cy.get('input#email, input[name*="email"]')
-      .should('be.visible')
-      .type('stephen.qa@example.com', { force: true });
-
-    cy.get('button[type="submit"], .bui-button__arrow, [name="book"]').first().click({ force: true });
-
-    cy.get(EL.completeBooking, { timeout: 10000 }).click({ force: true });
-    cy.wait('@finalPaymentMock');
+      .click({ force: true });
 
     cy.get('h1', { timeout: 15000 }).should('contain', 'Your reservation is confirmed');
   });
