@@ -3,7 +3,7 @@ export const EL = {
     destInput: 'input[name="ss"]', 
     searchBtn: 'button[type="submit"]',
     
-    hotelCard: '[data-testid="property-card"]',
+    hotelCard: '[data-testid="property-card"], .sr_property_block, [data-ad-id]',
     availabilityBtn: '[data-testid="availability-cta-button"]',
     roomSelect: 'select[data-testid="hprt-nos-select"]',
     reserveBtn: 'button.txp-bui-main-action',
