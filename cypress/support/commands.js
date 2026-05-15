@@ -38,3 +38,22 @@ Cypress.Commands.add('selectDynamicDates', () => {
     cy.get(`[data-date="${today}"]`).first().click({ force: true });
     cy.get(`[data-date="${tomorrowStr}"]`).first().click({ force: true });
 });
+
+Cypress.Commands.add('clearIntrusiveElements', () => {
+    // Definimos los selectores de los estorbos conocidos de Booking
+    const popups = [
+        'button[aria-label="Dismiss sign-in info."]',
+        '#onetrust-accept-btn-handler',
+        '.modal-content button.close'
+    ];
+
+    cy.get('body').then(($body) => {
+        popups.forEach((selector) => {
+            if ($body.find(selector).length > 0) {
+                // Usamos click({force:true}) solo aquí por si el popup está animándose
+                cy.get(selector).click({ force: true });
+                cy.log(`QA Audit: Elemento ${selector} cerrado exitosamente.`);
+            }
+        });
+    });
+});
