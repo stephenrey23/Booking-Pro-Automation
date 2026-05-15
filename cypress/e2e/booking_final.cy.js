@@ -35,7 +35,14 @@ describe('JIRA ID: BOOK-101 - Stephen Reyes End-to-End Happy Path', () => {
     cy.get(EL.searchBtn).contains('Search').click({ force: true });
     
     cy.wait('@searchResultsNet');
-    
+
+    cy.get('body').then(($body) => {
+        if ($body.find('a[target="_blank"]').length > 0) {
+            cy.get('a[target="_blank"]').invoke('removeAttr', 'target');
+            cy.log('QA Audit: Se detectaron y eliminaron links con target="_blank"');
+        }
+    });
+
     cy.get(EL.hotelCard, { timeout: 15000 })
       .first()
       .should('be.visible')
