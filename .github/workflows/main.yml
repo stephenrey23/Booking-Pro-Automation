@@ -1,15 +1,12 @@
-name: Cypress E2E Tests
-on: [push]
-
-jobs:
-  cypress-run:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Cypress run
+- name: Cypress run
         uses: cypress-io/github-action@v6
         with:
           browser: chrome
           spec: cypress/e2e/booking_final.cy.js
+
+      - name: Guardar Evidencias (Screenshots)
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
