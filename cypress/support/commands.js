@@ -15,10 +15,10 @@ Cypress.Commands.add('interceptStagingEnv', (customHtml = null) => {
                 <body style="background: #f4f4f4; padding: 20px; font-family: sans-serif;">
                     <h1>Results for New York</h1>
                     <div style="border: 1px solid #ccc; padding: 15px; background: white;">
-                        <a href="https://www.booking.com/checkout.html?hotel_id=999" id="mock-hotel-link" style="font-size: 20px; color: blue;">
+                        <a href="https://www.booking.com/checkout.html?hotel_id=999" id="mock-hotel-link" style="font-size: 20px; color: blue; font-weight: bold;">
                             Stephen Reyes Luxury Resort
                         </a>
-                        <p>QA Verified Mock</p>
+                        <p>QA Verified Mock Hotel</p>
                     </div>
                 </body>
             </html>`;
@@ -30,15 +30,44 @@ Cypress.Commands.add('interceptStagingEnv', (customHtml = null) => {
         });
     }).as('searchResultsNet');
 
-    cy.intercept('GET', '**/hotel/**', {
+    cy.intercept('GET', '**/checkout*', (req) => {
+        const checkoutHtml = `
+            <html>
+                <body style="padding: 50px; font-family: sans-serif;">
+                    <h1>Confirm your booking</h1>
+                    <form id="checkout-form">
+                        <div style="margin-bottom: 20px;">
+                            <label>First Name</label><br>
+                            <input id="firstname" name="firstname" type="text" style="border: 1px solid #000; width: 300px; height: 30px;">
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <label>Last Name</label><br>
+                            <input id="lastname" name="lastname" type="text" style="border: 1px solid #000; width: 300px; height: 30px;">
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <label>Email</label><br>
+                            <input id="email" name="email" type="email" style="border: 1px solid #000; width: 300px; height: 30px;">
+                        </div>
+                        <button type="submit" id="submit-button" style="background: blue; color: white; padding: 10px; cursor: pointer;">
+                            Finalize Booking
+                        </button>
+                    </form>
+                </body>
+            </html>`;
+
+        req.reply({
+            statusCode: 200,
+            body: checkoutHtml,
+            headers: { 'content-type': 'text/html; charset=utf-8' }
+        });
+    }).as('checkoutNet');
+
+    cy.intercept('POST', '**/book.html*', {
         statusCode: 200,
-        body: '<html><body><a href="https://www.booking.com/checkout.html">Go to Checkout</a></body></html>'
-    });
-
-    cy.intercept('GET', '**/checkout*', { fixture: 'checkout-details.json' }).as('checkoutNet');
-
-    cy.intercept('POST', '**/book.html*', { fixture: 'payment-success.json' }).as('finalPaymentMock');
+        body: '<html><body><h1>Your reservation is confirmed</h1></body></html>'
+    }).as('finalPaymentMock');
 });
+
 
 Cypress.Commands.add('humanizedVisit', (path) => {
     const url = `https://www.booking.com${path}?lang=en-us&cc=us`;
