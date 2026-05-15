@@ -8,7 +8,7 @@ describe('JIRA ID: BOOK-101 - Stephen Reyes End-to-End Happy Path', () => {
   });
 
   it('Execute Full Flow: Search -> Dates -> No Blank -> Mocked Payment', () => {
-    cy.get(EL.inputDestino).type('New York', { force: true });
+    cy.get(EL.destInput).type('New York', { force: true });
     cy.wait('@autocompleteNet');
     cy.get('ul li').first().click();
 
