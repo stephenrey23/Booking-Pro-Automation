@@ -1,6 +1,6 @@
 import { EL } from './selectors';
 
-Cypress.Commands.add('interceptStagingEnv', () => {
+Cypress.Commands.add('interceptStagingEnv', (customHtml = null) => {
     cy.intercept('GET', '**/ads*', { body: {} }); 
     
     cy.intercept('POST', '**/graphql*', (req) => {
@@ -9,10 +9,28 @@ Cypress.Commands.add('interceptStagingEnv', () => {
         }
     }).as('autocompleteNet');
 
-    cy.intercept('GET', '**/searchresults*', { fixture: 'search-results-ny.json' }).as('searchResultsNet');
+    cy.intercept('GET', '**/searchresults*', (req) => {
+        const fallbackHtml = `
+            <html>
+                <body style="background: #f4f4f4; font-family: sans-serif; padding: 20px;">
+                    <h1>Results for New York</h1>
+                    <div style="border: 1px solid #ccc; padding: 15px; background: white;">
+                        <a href="https://www.booking.com/hotel/us/stephen-reyes-resort.html" style="font-size: 20px; color: blue; font-weight: bold;">
+                            Stephen Reyes Luxury Resort
+                        </a>
+                        <p>QA Verified Mock Hotel</p>
+                    </div>
+                </body>
+            </html>`;
+
+        req.reply({
+            statusCode: 200,
+            body: customHtml || fallbackHtml,
+            headers: { 'content-type': 'text/html; charset=utf-8' }
+        });
+    }).as('searchResultsNet');
 
     cy.intercept('GET', '**/checkout*', { fixture: 'checkout-details.json' }).as('checkoutNet');
-
     cy.intercept('POST', '**/book.html*', { fixture: 'payment-success.json' }).as('finalPaymentMock');
 });
 
@@ -40,7 +58,6 @@ Cypress.Commands.add('selectDynamicDates', () => {
     const endDate = checkOut.toISOString().split('T')[0];
 
     cy.get('[data-testid="datepicker-tabs"]', { timeout: 10000 }).should('be.visible');
-
     cy.log(`QA Audit - Seleccionando fechas dinámicas: ${startDate} hasta ${endDate}`);
 
     cy.get(`[data-date="${startDate}"]`, { timeout: 8000 })
