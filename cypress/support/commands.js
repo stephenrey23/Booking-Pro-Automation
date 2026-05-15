@@ -31,20 +31,25 @@ Cypress.Commands.add('humanizedVisit', (path) => {
 
 Cypress.Commands.add('selectDynamicDates', () => {
     const today = new Date();
-    
     const checkIn = new Date(today);
     checkIn.setDate(today.getDate() + 7);
-    
     const checkOut = new Date(today);
     checkOut.setDate(today.getDate() + 10);
 
     const startDate = checkIn.toISOString().split('T')[0];
     const endDate = checkOut.toISOString().split('T')[0];
 
+    cy.get('[data-testid="datepicker-tabs"]', { timeout: 10000 }).should('be.visible');
+
     cy.log(`QA Audit - Seleccionando fechas dinámicas: ${startDate} hasta ${endDate}`);
 
-    cy.get(`[data-date="${startDate}"]`).scrollIntoView().click({ force: true });
-    cy.get(`[data-date="${endDate}"]`).scrollIntoView().click({ force: true });
+    cy.get(`[data-date="${startDate}"]`, { timeout: 8000 })
+        .should('be.visible')
+        .click({ force: true });
+
+    cy.get(`[data-date="${endDate}"]`, { timeout: 8000 })
+        .should('be.visible')
+        .click({ force: true });
 });
 
 Cypress.Commands.add('clearIntrusiveElements', () => {
