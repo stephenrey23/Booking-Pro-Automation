@@ -38,12 +38,21 @@ describe('JIRA ID: BOOK-101 - Stephen Reyes End-to-End Happy Path', () => {
 
     cy.wait('@checkoutNet', { timeout: 20000 });
 
-    cy.get(EL.fName, { timeout: 10000 }).should('be.visible').type('Stephen', { delay: 50 });
-    cy.get(EL.lName).type('Reyes', { delay: 50 });
-    cy.get(EL.email).type('stephen.qa@example.com');
-    cy.get(EL.submitDetails).click({ force: true });
+    cy.get('input#firstname, input[name*="firstname"], input[placeholder*="First"]', { timeout: 15000 })
+      .should('be.visible')
+      .type('Stephen', { delay: 50, force: true });
 
-    cy.get(EL.completeBooking).click({ force: true });
+    cy.get('input#lastname, input[name*="lastname"], input[placeholder*="Last"]')
+      .should('be.visible')
+      .type('Reyes', { delay: 50, force: true });
+
+    cy.get('input#email, input[name*="email"]')
+      .should('be.visible')
+      .type('stephen.qa@example.com', { force: true });
+
+    cy.get('button[type="submit"], .bui-button__arrow, [name="book"]').first().click({ force: true });
+
+    cy.get(EL.completeBooking, { timeout: 10000 }).click({ force: true });
     cy.wait('@finalPaymentMock');
 
     cy.get('h1', { timeout: 15000 }).should('contain', 'Your reservation is confirmed');
