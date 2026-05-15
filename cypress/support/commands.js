@@ -21,10 +21,20 @@ Cypress.Commands.add('interceptStagingEnv', (customHtml = null) => {
         req.reply({ statusCode: 200, body: checkoutHtml, headers: { 'content-type': 'text/html' } });
     }).as('checkoutNet');
 
-    cy.intercept('POST', '**/final-step.html*', {
-        body: '<html><body><button>Complete booking</button></body></html>'
+    cy.intercept('POST', '**/final-step.html*', (req) => {
+        const finalHtml = `
+            <html>
+                <body>
+                    <h1 id="status-title">Review your stay</h1>
+                    <button onclick="document.getElementById('status-title').innerText = 'Your reservation is confirmed';">
+                        Complete booking
+                    </button>
+                </body>
+            </html>`;
+        req.reply({ statusCode: 200, body: finalHtml, headers: { 'content-type': 'text/html; charset=utf-8' } });
     });
 });
+
 
 Cypress.Commands.add('humanizedVisit', (path) => {
     const url = `https://www.booking.com${path}?lang=en-us&cc=us`;
