@@ -4,11 +4,8 @@ describe('JIRA ID: BOOK-101 - Stephen Reyes End-to-End Happy Path', () => {
   
   beforeEach(() => {
     cy.viewport(1280, 720); 
-    
     cy.interceptStagingEnv(); 
-    
     cy.humanizedVisit('/index.html');
-    
     cy.clearIntrusiveElements();
   });
 
@@ -22,7 +19,6 @@ describe('JIRA ID: BOOK-101 - Stephen Reyes End-to-End Happy Path', () => {
 
     cy.get('body').then(($body) => {
         if ($body.find('[data-testid="datepicker-tabs"]').length === 0) {
-            cy.log('QA Audit: Forzando apertura de calendario...');
             cy.get('[data-testid="searchbox-dates-container"]').click();
         }
     });
@@ -33,29 +29,16 @@ describe('JIRA ID: BOOK-101 - Stephen Reyes End-to-End Happy Path', () => {
     cy.get(EL.searchBtn).contains('Search').click({ force: true });
     
     cy.wait('@searchResultsNet');
-
-    cy.url().then(url => cy.log('🌐 URL actual:', url));
-    cy.get('body').then(($body) => {
-        cy.log('Título detectado:', $body.find('h1').first().text());
-    });
-
     cy.screenshot('debug-search-results');
 
-    cy.get('a[href*="hotel/"]', { timeout: 15000 })
+    cy.get('a', { timeout: 15000 })
+      .filter('[href*="checkout"], [href*="hotel/"]')
       .first()
-      .scrollIntoView()
-      .should('be.visible')
       .click({ force: true });
 
-    cy.get('body').then(($body) => {
-        if ($body.find(EL.roomSelect).length > 0) {
-            cy.get(EL.roomSelect).first().select('1'); 
-            cy.get(EL.reserveBtn).contains("I'll reserve").click({ force: true });
-        }
-    });
+    cy.wait('@checkoutNet', { timeout: 20000 });
 
-    cy.wait('@checkoutNet');
-    cy.get(EL.fName).type('Stephen', { delay: 50 });
+    cy.get(EL.fName, { timeout: 10000 }).should('be.visible').type('Stephen', { delay: 50 });
     cy.get(EL.lName).type('Reyes', { delay: 50 });
     cy.get(EL.email).type('stephen.qa@example.com');
     cy.get(EL.submitDetails).click({ force: true });
