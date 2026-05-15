@@ -9,7 +9,7 @@ describe('JIRA ID: BOOK-101 - Stephen Reyes End-to-End Happy Path', () => {
   });
 
   it('Execute Full Flow: Search -> Dates -> No Blank -> Mocked Payment', () => {
-    cy.get(EL.destInput).type('New York', { force: true });
+    cy.get(EL.destInput).type('New York');
     cy.wait('@autocompleteNet');
     cy.get('ul li').first().click();
 
@@ -20,7 +20,7 @@ describe('JIRA ID: BOOK-101 - Stephen Reyes End-to-End Happy Path', () => {
     cy.get(EL.searchBtn).contains('Search').click();
     cy.wait('@searchResultsNet');
     
-    cy.get(EL.hotelCard).first().find(EL.availabilityBtn).click({ force: true });
+    cy.get(EL.hotelCard).first().scrollIntoView().find(EL.availabilityBtn).click();
 
     cy.get('body').then(($body) => {
         if ($body.find(EL.roomSelect).length > 0) {
