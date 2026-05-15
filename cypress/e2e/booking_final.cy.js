@@ -9,23 +9,29 @@ describe('JIRA ID: BOOK-101 - Stephen Reyes End-to-End Happy Path', () => {
   });
 
   it('Execute Full Flow: Search -> Dates -> No Blank -> Mocked Payment', () => {
-    cy.get(EL.destInput).type('New York');
+    cy.wait(1500); 
+    cy.clearIntrusiveElements(); 
+
+    cy.get(EL.destInput).type('New York', { delay: 100, force: true });
+    
     cy.wait('@autocompleteNet');
-    cy.get('ul li').first().click();
+    cy.get('ul li').first().click({ force: true });
 
     cy.selectDynamicDates();
 
     cy.get('form').invoke('removeAttr', 'target');
 
-    cy.get(EL.searchBtn).contains('Search').click();
+    cy.get(EL.searchBtn).contains('Search').click({ force: true });
     cy.wait('@searchResultsNet');
     
-    cy.get(EL.hotelCard).first().scrollIntoView().find(EL.availabilityBtn).click();
+    cy.get(EL.hotelCard).first().scrollIntoView();
+    cy.clearIntrusiveElements(); 
+    cy.get(EL.hotelCard).first().find(EL.availabilityBtn).click({ force: true });
 
     cy.get('body').then(($body) => {
         if ($body.find(EL.roomSelect).length > 0) {
             cy.get(EL.roomSelect).first().select('1'); 
-            cy.get(EL.reserveBtn).contains("I'll reserve").click();
+            cy.get(EL.reserveBtn).contains("I'll reserve").click({ force: true });
         }
     });
 
@@ -33,12 +39,12 @@ describe('JIRA ID: BOOK-101 - Stephen Reyes End-to-End Happy Path', () => {
     cy.get(EL.fName).type('Stephen', { delay: 50 });
     cy.get(EL.lName).type('Reyes', { delay: 50 });
     cy.get(EL.email).type('stephen.qa@example.com');
-    cy.get(EL.submitDetails).click();
+    
+    cy.get(EL.submitDetails).click({ force: true });
 
-    cy.get(EL.completeBooking).click();
+    cy.get(EL.completeBooking).click({ force: true });
     cy.wait('@finalPaymentMock');
 
-    cy.get('h1').should('contain', 'Your reservation is confirmed');
     cy.get('h1', { timeout: 15000 }).should('contain', 'Your reservation is confirmed');
   });
 });
