@@ -30,17 +30,24 @@ Cypress.Commands.add('humanizedVisit', (path) => {
 });
 
 Cypress.Commands.add('selectDynamicDates', () => {
-    const today = new Date().toISOString().split('T')[0];
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    const today = new Date();
+    
+    const checkIn = new Date(today);
+    checkIn.setDate(today.getDate() + 7);
+    
+    const checkOut = new Date(today);
+    checkOut.setDate(today.getDate() + 10);
 
-    cy.get(`[data-date="${today}"]`).first().click({ force: true });
-    cy.get(`[data-date="${tomorrowStr}"]`).first().click({ force: true });
+    const startDate = checkIn.toISOString().split('T')[0];
+    const endDate = checkOut.toISOString().split('T')[0];
+
+    cy.log(`QA Audit - Seleccionando fechas dinámicas: ${startDate} hasta ${endDate}`);
+
+    cy.get(`[data-date="${startDate}"]`).scrollIntoView().click({ force: true });
+    cy.get(`[data-date="${endDate}"]`).scrollIntoView().click({ force: true });
 });
 
 Cypress.Commands.add('clearIntrusiveElements', () => {
-    // Definimos los selectores de los estorbos conocidos de Booking
     const popups = [
         'button[aria-label="Dismiss sign-in info."]',
         '#onetrust-accept-btn-handler',
@@ -50,7 +57,6 @@ Cypress.Commands.add('clearIntrusiveElements', () => {
     cy.get('body').then(($body) => {
         popups.forEach((selector) => {
             if ($body.find(selector).length > 0) {
-                // Usamos click({force:true}) solo aquí por si el popup está animándose
                 cy.get(selector).click({ force: true });
                 cy.log(`QA Audit: Elemento ${selector} cerrado exitosamente.`);
             }
