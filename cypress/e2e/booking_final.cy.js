@@ -13,19 +13,32 @@ describe('JIRA ID: BOOK-101 - Stephen Reyes End-to-End Happy Path', () => {
     cy.clearIntrusiveElements(); 
 
     cy.get(EL.destInput).type('New York', { delay: 100, force: true });
-    
     cy.wait('@autocompleteNet');
+    
     cy.get('ul li').first().click({ force: true });
 
+    cy.get('body').then(($body) => {
+        const isCalendarVisible = $body.find('[data-testid="datepicker-tabs"]').length > 0;
+        
+        if (!isCalendarVisible) {
+            cy.log('QA Audit: El calendario no se abrió, forzando apertura...');
+            cy.get('[data-testid="searchbox-dates-container"]').click();
+        } else {
+            cy.log('QA Audit: El calendario ya está visible.');
+        }
+    });
+    
+    cy.wait(500); 
     cy.selectDynamicDates();
 
     cy.get('form').invoke('removeAttr', 'target');
-
     cy.get(EL.searchBtn).contains('Search').click({ force: true });
     cy.wait('@searchResultsNet');
     
     cy.get(EL.hotelCard).first().scrollIntoView();
     cy.clearIntrusiveElements(); 
+    
+    cy.get(EL.hotelCard).first().find('a').invoke('removeAttr', 'target');
     cy.get(EL.hotelCard).first().find(EL.availabilityBtn).click({ force: true });
 
     cy.get('body').then(($body) => {
