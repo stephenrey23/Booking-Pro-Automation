@@ -22,7 +22,6 @@ Cypress.Commands.add('interceptStagingEnv', (customHtml = null) => {
                     </div>
                 </body>
             </html>`;
-
         req.reply({
             statusCode: 200,
             body: customHtml || fallbackHtml,
@@ -35,71 +34,31 @@ Cypress.Commands.add('interceptStagingEnv', (customHtml = null) => {
             <html>
                 <body style="padding: 50px; font-family: sans-serif;">
                     <h1>Confirm your booking</h1>
-                    <form id="checkout-form">
-                        <div style="margin-bottom: 20px;">
-                            <label>First Name</label><br>
-                            <input id="firstname" name="firstname" type="text" style="border: 1px solid #000; width: 300px; height: 30px;">
-                        </div>
-                        <div style="margin-bottom: 20px;">
-                            <label>Last Name</label><br>
-                            <input id="lastname" name="lastname" type="text" style="border: 1px solid #000; width: 300px; height: 30px;">
-                        </div>
-                        <div style="margin-bottom: 20px;">
-                            <label>Email</label><br>
-                            <input id="email" name="email" type="email" style="border: 1px solid #000; width: 300px; height: 30px;">
-                        </div>
-                        <button type="submit" id="submit-button" style="background: blue; color: white; padding: 10px; cursor: pointer;">
-                            Finalize Booking
-                        </button>
+                    <form action="https://www.booking.com/final-step.html" method="POST">
+                        <input id="firstname" name="firstname" type="text">
+                        <input id="lastname" name="lastname" type="text">
+                        <input id="email" name="email" type="email">
+                        <button type="submit">Finalize Booking</button>
                     </form>
                 </body>
             </html>`;
-
-        req.reply({
-            statusCode: 200,
-            body: checkoutHtml,
-            headers: { 'content-type': 'text/html; charset=utf-8' }
-        });
+        req.reply({ statusCode: 200, body: checkoutHtml, headers: { 'content-type': 'text/html; charset=utf-8' } });
     }).as('checkoutNet');
 
-    cy.intercept('POST', '**/book.html*', {
+    cy.intercept('POST', '**/final-step.html*', (req) => {
+        const finalHtml = `
+            <html>
+                <body>
+                    <h1>Review your stay</h1>
+                    <button id="complete-btn">Complete booking</button>
+                </body>
+            </html>`;
+        req.reply({ statusCode: 200, body: finalHtml, headers: { 'content-type': 'text/html; charset=utf-8' } });
+    }).as('preFinalStep');
+
+    cy.intercept('GET', '**/confirmation*', {
         statusCode: 200,
         body: '<html><body><h1>Your reservation is confirmed</h1></body></html>'
     }).as('finalPaymentMock');
 });
 
-
-Cypress.Commands.add('humanizedVisit', (path) => {
-    const url = `https://www.booking.com${path}?lang=en-us&cc=us`;
-    cy.visit(url, {
-        onBeforeLoad: (win) => {
-            Object.defineProperty(win.navigator, 'webdriver', { get: () => false });
-        },
-        headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0',
-            'Accept-Language': 'en-US,en;q=0.9'
-        }
-    });
-});
-
-Cypress.Commands.add('selectDynamicDates', () => {
-    const today = new Date();
-    const checkIn = new Date(today);
-    checkIn.setDate(today.getDate() + 7);
-    const checkOut = new Date(today);
-    checkOut.setDate(today.getDate() + 10);
-    const startDate = checkIn.toISOString().split('T')[0];
-    const endDate = checkOut.toISOString().split('T')[0];
-    cy.get('[data-testid="datepicker-tabs"]', { timeout: 10000 }).should('be.visible');
-    cy.get(`[data-date="${startDate}"]`).first().click({ force: true });
-    cy.get(`[data-date="${endDate}"]`).first().click({ force: true });
-});
-
-Cypress.Commands.add('clearIntrusiveElements', () => {
-    const popups = ['button[aria-label="Dismiss sign-in info."]', '#onetrust-accept-btn-handler'];
-    cy.get('body').then(($body) => {
-        popups.forEach((selector) => {
-            if ($body.find(selector).length > 0) cy.get(selector).click({ force: true });
-        });
-    });
-});
