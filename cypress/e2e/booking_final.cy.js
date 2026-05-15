@@ -19,12 +19,9 @@ describe('JIRA ID: BOOK-101 - Stephen Reyes End-to-End Happy Path', () => {
 
     cy.get('body').then(($body) => {
         const isCalendarVisible = $body.find('[data-testid="datepicker-tabs"]').length > 0;
-        
         if (!isCalendarVisible) {
             cy.log('QA Audit: El calendario no se abrió, forzando apertura...');
             cy.get('[data-testid="searchbox-dates-container"]').click();
-        } else {
-            cy.log('QA Audit: El calendario ya está visible.');
         }
     });
     
@@ -39,21 +36,18 @@ describe('JIRA ID: BOOK-101 - Stephen Reyes End-to-End Happy Path', () => {
     cy.get('body').then(($body) => {
         if ($body.find('a[target="_blank"]').length > 0) {
             cy.get('a[target="_blank"]').invoke('removeAttr', 'target');
-            cy.log('QA Audit: Se detectaron y eliminaron links con target="_blank"');
         }
     });
 
     cy.get('body').then(($body) => {
-        cy.log('Estructura detectada:', $body.html().substring(0, 500)); 
-        if ($body.find('h1').length > 0) {
-            cy.log('Título de la página actual:', $body.find('h1').text());
-        }
+        cy.log('Título detectado:', $body.find('h1').text());
     });
 
-    cy.clearIntrusiveElements(); 
-    
-    cy.get(EL.hotelCard).first().find('a').invoke('removeAttr', 'target');
-    cy.get(EL.hotelCard).first().find(EL.availabilityBtn).click({ force: true });
+    cy.get('a[href*="hotel/"]', { timeout: 20000 })
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .click({ force: true });
 
     cy.get('body').then(($body) => {
         if ($body.find(EL.roomSelect).length > 0) {
