@@ -1,30 +1,31 @@
-# Booking.com Advanced E2E Automation Project
+# Booking.com Advanced Hybrid Automation Project
 
 [![Cypress.io](https://img.shields.io/badge/tested%20with-Cypress-04C38E.svg)](https://www.cypress.io/)
 [![GitHub Actions](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF.svg)](https://github.com/features/actions)
 [![Language](https://img.shields.io/badge/Language-JavaScript-F7DF1E.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 
 ## 📌 Project Overview
-This repository contains a high-level, production-ready End-to-End (E2E) automation suite for **Booking.com**, built using **Cypress** and **JavaScript**. 
+This repository contains an advanced automation suite built using **Cypress** and **JavaScript** that targets the "Happy Path" checkout flow of **Booking.com**. 
 
-The main objective of this project is to demonstrate advanced QA engineering principles, specifically focusing on **Service Virtualization (Mocking)**, handling highly dynamic web elements, and building deterministic pipelines that run flawlessly under Continuous Integration (CI) environments.
+### ⚠️ Architecture Note: Hybrid Testing Approach
+Automating against live third-party production applications presents severe limitations due to Web Application Firewalls (WAF) and aggressive anti-bot triggers. To build a reliable and non-flaky pipeline without having access to a dedicated corporate **Staging environment**, this project deliberately implements a **Hybrid Service Virtualization approach**. 
+
+The suite interacts with the live site for initial navigation and search, but strategically transitions into an isolated, mocked UI component layer during the checkout phase to ensure a 100% deterministic build in CI/CD.
 
 ---
 
-## 🚀 Key Features & Engineering Challenges
+## 🚀 Key Features & Engineering Solutions
 
-### 1. Anti-Bot Bypass & Humanized Navigation
-High-traffic platforms like Booking.com employ aggressive anti-bot and Web Application Firewalls (WAF). To address this, the framework implements a custom user simulation layer:
-* **`cy.humanizedVisit()`**: Disables `navigator.webdriver` flags and injects realistic user-agent structures before loading the window.
-* **Intrusive Element Cleansing**: Asynchronous interceptors that programmatically detect and dismiss unexpected modales, generic pop-ups, and cookies without breaking the main execution thread.
+### 1. Environment Isolation via Service Virtualization
+High-traffic public platforms restrict automated tools during sensitive data input stages (checkout/payment). To handle this infrastructure blocker, the framework shifts from a standard E2E to a mock-driven approach:
+* **Network Interception:** Uses `cy.intercept()` to capture and halt outbound GraphQL and POST network requests at the checkout boundary.
+* **Component Simulation:** Injects a controlled, lightweight HTML structure directly into the browser DOM to simulate the checkout fields (`#firstname`, `#lastname`, `#email`).
+* **State Transition Triggering:** Leverages native JavaScript binding (`onclick` event handlers) within the injected components to programmatically trigger client-side UI mutations and verify success states instantly.
 
-### 2. Service Virtualization & Mocking Architecture
-To guarantee a **100% deterministic test execution** and avoid flakiness caused by third-party network instability or rate-limiting, the project implements strict network intercept layers:
-* **Dynamic HTML Injection**: The checkout flow relies on `cy.intercept()` to bypass broken or unpredictable staging states by injecting dynamic, ultra-fast, and reactive HTML components directly into the browser.
-* **State Mutation Simulation**: Leverages JavaScript bindings (`onclick` event triggers) inside the mock layers to instantly simulate client-side state transitions (e.g., changing page status headers programmatically).
-
-### 3. Dynamic Date Manipulation
-Hardcoded dates cause automation pipelines to expire. This framework features a dynamic date calculator wrapper (**`cy.selectDynamicDates()`**) that programmatically computes checkout targets relative to the execution timestamp ($T + 7$ and $T + 10$ days).
+### 2. Live UI Interactivity & Dynamic Dates
+Before entering the virtualized checkout state, the script interacts with live components using robust scripting practices:
+* **Dynamic Date Calculation:** Features a custom utility (**`cy.selectDynamicDates()`**) that programmatically computes check-in and check-out targets relative to the execution timestamp (T + 7 and T + 10 days), eliminating hardcoded calendar expirations.
+* **Asynchronous Pop-up Cleansing:** Incorporates conditional handling hooks to dismiss third-party overlays, cookie banners, and login prompts that appear asynchronously without halting the main test execution thread.
 
 ---
 
@@ -32,7 +33,7 @@ Hardcoded dates cause automation pipelines to expire. This framework features a 
 * **Core Framework:** Cypress (v13+)
 * **Language:** JavaScript (ES6+)
 * **CI/CD Pipeline:** GitHub Actions
-* **Design Pattern:** Customized App Actions / Command-Driven Architecture
+* **Design Pattern:** Command-Driven Architecture / Centralized Element Mapping
 
 ---
 
@@ -40,13 +41,13 @@ Hardcoded dates cause automation pipelines to expire. This framework features a 
 ```text
 ├── cypress/
 │   ├── e2e/
-│   │   └── booking_final.cy.js    # Main End-to-End Test (Happy Path Flow)
+│   │   └── booking_final.cy.js    # Hybrid Automation Flow (Live Search + Mocked Checkout)
 │   ├── fixtures/
 │   │   └── autocomplete-ny.json   # Simulated Geo-Location payload
 │   └── support/
-│       ├── commands.js            # Custom architecture, hooks, and intercept wrappers
-│       ├── selectors.js           # Centralized locator dictionary
+│       ├── commands.js            # Intercept wrappers, injection logic, and hooks
+│       ├── selectors.js           # Centralized element locator dictionary
 │       └── e2e.js                 # Global configuration configuration
 ├── .github/workflows/
-│   └── main.yml                   # CI/CD Workflow configuration for automated regression
+│   └── main.yml                   # GitHub Actions pipeline configuration
 └── package.json
