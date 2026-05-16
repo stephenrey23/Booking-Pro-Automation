@@ -1,5 +1,4 @@
 export const EL = {
-    // Búsqueda
     destInput: 'input[name="ss"]', 
     searchBtn: 'button[type="submit"]',
     
